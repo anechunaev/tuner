@@ -7,6 +7,9 @@
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "bin": {
+    "tuner": "./lib/index.js"
+  },
   "directories": {
     "lib": "lib",
     "test": "tests",
