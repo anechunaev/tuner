@@ -1,0 +1,26 @@
+{
+  "name": "@tuner/tools",
+  "version": "1.0.0",
+  "description": "Tools and scripts for main @tuner/core project",
+  "main": "index.js",
+  "scripts": {
+    "build": "lerna run build",
+    "test": "echo 'Not implemented yet' && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bungu/tuner.git"
+  },
+  "keywords": [],
+  "author": "Artem Nechunaev <artem@nechunaev.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bungu/tuner/issues"
+  },
+  "homepage": "https://github.com/bungu/tuner#readme",
+  "devDependencies": {
+    "@types/node": "^14.14.9",
+    "lerna": "^3.22.1",
+    "typescript": "^4.1.2"
+  }
+}
