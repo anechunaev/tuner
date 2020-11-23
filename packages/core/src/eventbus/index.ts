@@ -15,8 +15,10 @@ export function on(eventType: typeof EventType.EVENT_COMMAND_STDERR, listener: T
 export function on(eventType: typeof EventType.EVENT_COMMAND_STDIN, listener: TunerEventListener<string>): void;
 export function on(eventType: typeof EventType.EVENT_COMMAND_STDOUT, listener: TunerEventListener<string>): void;
 export function on(eventType: typeof EventType.EVENT_TASK_MESSAGE, listener: TunerEventListener<string>): void;
+export function on(eventType: typeof EventType.EVENT_COMMAND_START, listener: TunerEventListener<undefined>): void;
 export function on(eventType: typeof EventType.EVENT_COMMAND_FINISH, listener: TunerEventListener<undefined>): void;
 export function on(eventType: typeof EventType.EVENT_COMMAND_FINALLY, listener: TunerEventListener<undefined>): void;
+export function on(eventType: typeof EventType.EVENT_TASK_START, listener: TunerEventListener<undefined>): void;
 export function on(eventType: typeof EventType.EVENT_TASK_FINISH, listener: TunerEventListener<undefined>): void;
 export function on(eventType: typeof EventType.EVENT_TASK_FINALLY, listener: TunerEventListener<undefined>): void;
 export function on(eventType: any, listener: any): void {
@@ -31,8 +33,10 @@ export function off(eventType: typeof EventType.EVENT_COMMAND_STDERR, listener: 
 export function off(eventType: typeof EventType.EVENT_COMMAND_STDIN, listener: TunerEventListener<string>): void;
 export function off(eventType: typeof EventType.EVENT_COMMAND_STDOUT, listener: TunerEventListener<string>): void;
 export function off(eventType: typeof EventType.EVENT_TASK_MESSAGE, listener: TunerEventListener<string>): void;
+export function off(eventType: typeof EventType.EVENT_COMMAND_START, listener: TunerEventListener<undefined>): void;
 export function off(eventType: typeof EventType.EVENT_COMMAND_FINISH, listener: TunerEventListener<undefined>): void;
 export function off(eventType: typeof EventType.EVENT_COMMAND_FINALLY, listener: TunerEventListener<undefined>): void;
+export function off(eventType: typeof EventType.EVENT_TASK_START, listener: TunerEventListener<undefined>): void;
 export function off(eventType: typeof EventType.EVENT_TASK_FINISH, listener: TunerEventListener<undefined>): void;
 export function off(eventType: typeof EventType.EVENT_TASK_FINALLY, listener: TunerEventListener<undefined>): void;
 export function off(eventType: any, listener: any): void {
@@ -54,8 +58,10 @@ export function emit(eventType: typeof EventType.EVENT_COMMAND_STDERR, data: Tun
 export function emit(eventType: typeof EventType.EVENT_COMMAND_STDIN, data: TunerEvent<string>): void;
 export function emit(eventType: typeof EventType.EVENT_COMMAND_STDOUT, data: TunerEvent<string>): void;
 export function emit(eventType: typeof EventType.EVENT_TASK_MESSAGE, data: TunerEvent<string>): void;
+export function emit(eventType: typeof EventType.EVENT_COMMAND_START, data: TunerEvent<undefined>): void;
 export function emit(eventType: typeof EventType.EVENT_COMMAND_FINISH, data: TunerEvent<undefined>): void;
 export function emit(eventType: typeof EventType.EVENT_COMMAND_FINALLY, data: TunerEvent<undefined>): void;
+export function emit(eventType: typeof EventType.EVENT_TASK_START, data: TunerEvent<undefined>): void;
 export function emit(eventType: typeof EventType.EVENT_TASK_FINISH, data: TunerEvent<undefined>): void;
 export function emit(eventType: typeof EventType.EVENT_TASK_FINALLY, data: TunerEvent<undefined>): void;
 export function emit(eventType: any, data: any) {
@@ -72,20 +78,20 @@ export function createEvent<T extends string | Error | undefined>(ctx: Context, 
 	};
 }
 
-type ReplaceReturnType<T extends (...a: any) => any, R> = (...a: Parameters<T>) => R;
+// type ReplaceReturnType<T extends (...a: any) => any, R> = (...a: Parameters<T>) => R;
 export type TunerEventBus = {
-	on: ReplaceReturnType<typeof on, TunerEventBus>;
-	off: ReplaceReturnType<typeof off, TunerEventBus>;
-	emit: ReplaceReturnType<typeof emit, TunerEventBus>;
+	on: typeof on;
+	off: typeof off;
+	emit: typeof emit;
 	createEvent: typeof createEvent;
 }
 
 export function createEventBus() {
 	const bus: TunerEventBus = {
-		on(...args) { on(...args); return bus; },
-		off(...args) { off(...args); return bus; },
-		emit(...args) { emit(...args); return bus; },
-		createEvent(...args) { return createEvent(...args); },
+		on,
+		off,
+		emit,
+		createEvent,
 	};
 
 	return bus;

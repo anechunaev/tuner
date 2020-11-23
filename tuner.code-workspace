@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../tuner-old"
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "tuner/node_modules/typescript/lib"
+	}
+}

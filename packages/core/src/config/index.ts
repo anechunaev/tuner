@@ -13,6 +13,7 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 	if (typeof config.commands !== 'undefined') {
 		Object.keys(config.commands).forEach(cmd => {
 			if (typeof config.commands[cmd] === 'string') {
+				// @TODO: Add node modules resolve
 				newConfig.commands[cmd] = path.resolve(configDir, config.commands[cmd]);
 			}
 		});
@@ -21,6 +22,7 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 	if (typeof config.tasks !== 'undefined') {
 		Object.keys(config.tasks).forEach(task => {
 			if (typeof config.tasks[task] === 'string') {
+				// @TODO: Add node modules resolve
 				newConfig.tasks[task] = path.resolve(configDir, config.tasks[task]);
 			}
 		});

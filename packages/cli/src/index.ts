@@ -1,35 +1,36 @@
+#!/usr/bin/env node
+
 import { init, run } from "@tuner/core";
+import classicUI from './classic';
+import compactUI from './compact';
+import dashboardUI from './dashboard';
 
-const wrappedLog = (...args: any[]) => console.log(`\x1b[2m${args.map(e => e.toString()).join(' ')}\x1b[0m`);
+let msgStart = ''; //"\x1b[2m";
+let msgEnd = ''; //"\x1b[0m"
+const wrappedLog = (...args: any[]) => console.log(`${msgStart}${args.map(e => e.toString()).join(' ')}${msgEnd}`);
 
-const runner = init({}, wrappedLog);
+const runner = init(wrappedLog);
+const uiType = runner.context.config.ui;
+const isCI = runner.context.config.ci;
 
-runner.eventBus.on("command-start" as any, ({ cmd, context }) => {
-	console.log(`[CLI]: Command "${cmd}" started. Context: `, context);
-});
+if (!isCI) {
+	msgStart = "\x1b[2m";
+	msgEnd = "\x1b[0m"
+}
 
-runner.eventBus.on("task-start" as any, ({ task }) => {
-	console.log(`[CLI]: Task "${task}" started.`);
-});
+let ui = classicUI;
 
-runner.eventBus.on("task-message" as any, ({ task, data }) => {
-	console.log(`[CLI]: Task "${task}" messsaged: "${data}"`);
-});
+switch(uiType) {
+case "dashboard":
+	ui = dashboardUI;
+	break;
+case "compact":
+	ui = compactUI;
+	break;
+default:
+	ui = classicUI;
+}
 
-runner.eventBus.on("task-finish" as any, ({ task }) => {
-	console.log(`[CLI]: Task "${task}" finished.`);
-});
-
-runner.eventBus.on("task-finally" as any, ({ task }) => {
-	console.log(`[CLI]: Task "${task}" finally.`);
-});
-
-runner.eventBus.on("command-finish" as any, ({ cmd }) => {
-	console.log(`[CLI]: Command "${cmd}" finished.`);
-});
-
-runner.eventBus.on("command-finally" as any, ({ cmd }) => {
-	console.log(`[CLI]: Command "${cmd}" finally.`);
-});
+ui(runner);
 
 run(runner, wrappedLog);

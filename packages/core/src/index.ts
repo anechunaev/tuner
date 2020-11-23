@@ -1,32 +1,36 @@
 import { createEventBus } from './eventbus';
 import { createContext } from './context';
-import { Config, Runner } from './interfaces';
+import { getConfig } from './config';
+import { Runner, Args } from './interfaces';
+import parseArgs from 'minimist';
 
 const callStack: string[] = [];
 
-export function init(config: Config, log = console.log): Runner {
-	log('@TODO: Validate config');
+export function init(log = console.log): Runner {
+	const config = getConfig();
+	// log('@TODO: Validate config');
 	// ...
 
-	log('[->]: Check for updates - async add command');
+	if (config.debug) log('[->]: Check for updates - async add command');
 	if (config.autoupdate) {
 		callStack.push('update');
 	}
 
-	log('@TODO: Load commands list');
+	if (config.debug) log('@TODO: Load commands list');
 	// ...
 
-	log('[->]: Create event bus');
+	if (config.debug) log('[->]: Create event bus');
 	const eventBus = createEventBus();
 
-	log('@TODO: Create context');
-	const context = createContext({ cmd: process.argv0, args: process.argv.slice(1), config });
+	if (config.debug) log('@TODO: Create context');
+	const args: Args = parseArgs(process.argv.slice(2)) as Args;
+	const context = createContext({ cmd: args._[0], args, config });
 	callStack.push(context.cmd);
 
-	log('@TODO: Import current command', callStack);
+	if (config.debug) log('@TODO: Import current command', callStack);
 	// ...
 
-	log('@TODO: Validate current command config');
+	if (config.debug) log('@TODO: Validate current command config');
 	// ...
 
 	return {
@@ -37,23 +41,24 @@ export function init(config: Config, log = console.log): Runner {
 
 export async function run(runner: Runner, log = console.log) {
 	const cmd = runner.context.cmd;
+	const config = runner.context.config;
 
-	log(`[${cmd}]: @TODO: fork process`);
-	// ...
-
-	log(`[${cmd}]: @TODO: ⚡️ command-start`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-start`);
 	runner.eventBus.emit("command-start" as any, runner.eventBus.createEvent(runner.context, cmd));
 
-	log(`[${cmd}]: @TODO: Load tasks list`);
+	if (config.debug) log(`[${cmd}]: @TODO: fork process`);
 	// ...
 
-	log(`[${cmd}]: @TODO: Import tasks`);
+	if (config.debug) log(`[${cmd}]: @TODO: Load tasks list`);
 	// ...
 
-	log(`[${cmd}]: @TODO: ⚡️ task-start`);
+	if (config.debug) log(`[${cmd}]: @TODO: Import tasks`);
+	// ...
+
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-start`);
 	runner.eventBus.emit("task-start" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
 
-	log(`[${cmd}]: @TODO: ⚡️ task-message`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-message`);
 	function sleep(ms: number): Promise<void> {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
@@ -66,16 +71,16 @@ export async function run(runner: Runner, log = console.log) {
 	}
 	await delayedMessage();
 
-	log(`[${cmd}]: @TODO: ⚡️ task-finish`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-finish`);
 	runner.eventBus.emit("task-finish" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
 
-	log(`[${cmd}]: @TODO: ⚡️ task-finally`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-finally`);
 	runner.eventBus.emit("task-finally" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
 
-	log(`[${cmd}]: @TODO: ⚡️ command-finish`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-finish`);
 	runner.eventBus.emit("command-finish" as any, runner.eventBus.createEvent(runner.context, cmd));
 
-	log(`[${cmd}]: @TODO: ⚡️ command-finally`);
+	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-finally`);
 	runner.eventBus.emit("command-finally" as any, runner.eventBus.createEvent(runner.context, cmd));
 }
 

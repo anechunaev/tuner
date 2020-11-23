@@ -1,9 +1,9 @@
 {
-  "name": "@tuner/cli",
+  "name": "@tuner/dummy",
   "version": "0.0.0",
-  "description": "Command line interface for Tuner core",
+  "description": "Component for integration tests",
   "author": "Artem Nechunaev <artem@nechunaev.com>",
-  "homepage": "https://github.com/bungu/tuner/tree/master/packages/cli#readme",
+  "homepage": "https://github.com/bungu/tuner/tree/master/packages/dummy#readme",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -36,6 +36,6 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@tuner/cli": "*"
+    "@tuner/core": "*"
   }
 }

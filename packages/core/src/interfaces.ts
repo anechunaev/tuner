@@ -11,10 +11,15 @@ export type ContextError = {
 	description?: string;
 }
 
+export type Args = {
+	_: readonly string[];
+	readonly [flag: string]: any;
+}
+
 export type Context = {
 	config: Record<string, any>;
 	cmd: string;
-	args: readonly string[];
+	args: Args;
 	local: any;
 	error?: ContextError;
 }

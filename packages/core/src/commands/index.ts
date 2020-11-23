@@ -1,9 +1,9 @@
 import { createContext } from '../context';
 import * as Errors from '../errors/list';
 
-import { Task, } from '../interfaces';
+import { Task, Args } from '../interfaces';
 
-export async function runCommand(cmd: string, args: string[], config: Record<string, any>) {
+export async function runCommand(cmd: string, args: Args, config: Record<string, any>) {
 	const context = createContext({ config, cmd, args });
 
 	if (typeof config.commands[cmd] === 'undefined') {
