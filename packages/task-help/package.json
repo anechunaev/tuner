@@ -1,9 +1,9 @@
 {
-  "name": "@tuner/core",
+  "name": "@tuner/task-help",
   "version": "0.0.0",
-  "description": "Core of the Tuner",
-  "author": "Artem Nechunaev <artem@nechunaev.com>",
-  "homepage": "https://github.com/bungu/tuner/tree/master/packages/core#readme",
+  "description": "Shows all available commands",
+  "author": "Artem Nechunaev <bungubot@gmail.com>",
+  "homepage": "https://github.com/bungu/tuner/tree/master/packages/task-help#readme",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -30,10 +30,11 @@
     "url": "https://github.com/bungu/tuner/issues"
   },
   "devDependencies": {
+    "@types/columnify": "^1.5.0",
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@tuner/preset-default": "*",
-    "js-yaml": "^3.14.0"
+    "@tuner/core": "*",
+    "columnify": "^1.5.4"
   }
 }

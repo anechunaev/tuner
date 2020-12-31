@@ -3,7 +3,15 @@ import fs from 'fs';
 import * as Constants from './constants';
 import { mergeConfigs } from './helpers';
 import yaml from 'js-yaml';
+import { nestedArrayMapper } from '../tools';
 
+const getTaskFullPath = (configDir: string, task: string) => {
+	if (task[0] === '.' || task[0] === '/') {
+		return path.resolve(configDir, task);
+	} else {
+		return require.resolve(task);
+	}
+}
 
 export function resolvePathsInConfig<T extends Record<string, any>>(config: T, configDir: string): T {
 	if (config === null || typeof config === 'undefined') return config;
@@ -12,18 +20,22 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 
 	if (typeof config.commands !== 'undefined') {
 		Object.keys(config.commands).forEach(cmd => {
-			if (typeof config.commands[cmd] === 'string') {
-				// @TODO: Add node modules resolve
-				newConfig.commands[cmd] = path.resolve(configDir, config.commands[cmd]);
-			}
-		});
-	}
+			// TODO: move to errors list
+			const errorTaskPath = new Error(`Error: Task should be a string or array of strings. Check command "${cmd}".`);
 
-	if (typeof config.tasks !== 'undefined') {
-		Object.keys(config.tasks).forEach(task => {
-			if (typeof config.tasks[task] === 'string') {
-				// @TODO: Add node modules resolve
-				newConfig.tasks[task] = path.resolve(configDir, config.tasks[task]);
+			// TODO: do something less stupid instead
+			switch(true) {
+			case Array.isArray(config.commands[cmd].tasks):
+				config.commands[cmd].tasks = nestedArrayMapper(
+					config.commands[cmd].tasks,
+					(task) => getTaskFullPath(configDir, task),
+				);
+				break;
+			case typeof config.commands[cmd].tasks === "string":
+				config.commands[cmd].tasks = [getTaskFullPath(configDir, config.commands[cmd].tasks)];
+				break;
+			default:
+				throw errorTaskPath;
 			}
 		});
 	}
@@ -32,6 +44,7 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 }
 
 export function getConfig() {
+	// Find all configs in system
 	const files = Constants.PATHS_TO_SEARCH.reduce<Set<string>>((list, pathToSearch) => {
 		Constants.CONFIG_FILE_NAMES.forEach(configPath => {
 			const finalPath = path.resolve(pathToSearch, configPath);
@@ -45,6 +58,7 @@ export function getConfig() {
 
 	files.add(Constants.DEFAULT_CONFIG_PATH);
 
+	// Set base config
 	let config: Record<string, any> = {
 		meta: {
 			package: Constants.PACKAGE.name,
@@ -52,6 +66,8 @@ export function getConfig() {
 			name: Constants.APP_NAME,
 		},
 	};
+
+	// Deep merge all available configs
 	[...files.values()].reverse().forEach(entry => {
 		let resolvedConfig = {};
 

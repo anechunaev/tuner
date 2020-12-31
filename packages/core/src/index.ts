@@ -2,36 +2,26 @@ import { createEventBus } from './eventbus';
 import { createContext } from './context';
 import { getConfig } from './config';
 import { Runner, Args } from './interfaces';
-import parseArgs from 'minimist';
+import { nestedArrayMapper } from './tools';
 
-const callStack: string[] = [];
+let shouldSelfUpdate = false;
 
-export function init(log = console.log): Runner {
+export function init(args: Args): Runner {
 	const config = getConfig();
-	// log('@TODO: Validate config');
+
+	// TODO: Validate config
 	// ...
 
-	if (config.debug) log('[->]: Check for updates - async add command');
+	// TODO: Check for updates - async add command
 	if (config.autoupdate) {
-		callStack.push('update');
+		// TODO: check if update needed
+		// ...
+		// shouldSelfUpdate = true;
 	}
 
-	if (config.debug) log('@TODO: Load commands list');
-	// ...
-
-	if (config.debug) log('[->]: Create event bus');
 	const eventBus = createEventBus();
 
-	if (config.debug) log('@TODO: Create context');
-	const args: Args = parseArgs(process.argv.slice(2)) as Args;
-	const context = createContext({ cmd: args._[0], args, config });
-	callStack.push(context.cmd);
-
-	if (config.debug) log('@TODO: Import current command', callStack);
-	// ...
-
-	if (config.debug) log('@TODO: Validate current command config');
-	// ...
+	const context = createContext({ args, config });
 
 	return {
 		eventBus,
@@ -39,60 +29,75 @@ export function init(log = console.log): Runner {
 	};
 }
 
-export async function run(runner: Runner, log = console.log) {
-	const cmd = runner.context.cmd;
-	const config = runner.context.config;
+export async function run(cmd: string, runner: Runner) {
+	runner.context.cmd = cmd;
+	const commandInfo = runner.context.config.commands[cmd];
 
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-start`);
-	runner.eventBus.emit("command-start" as any, runner.eventBus.createEvent(runner.context, cmd));
+	let index = 0;
+	const requiredTaskList = nestedArrayMapper(commandInfo.tasks, (task) => {
+		const exp = require(task);
+		if (exp.id) return exp;
 
-	if (config.debug) log(`[${cmd}]: @TODO: fork process`);
-	// ...
+		exp.id = Number(++index);
+		exp.path = task;
+		return exp;
+	});
+	commandInfo.tasks = requiredTaskList;
 
-	if (config.debug) log(`[${cmd}]: @TODO: Load tasks list`);
-	// ...
-
-	if (config.debug) log(`[${cmd}]: @TODO: Import tasks`);
-	// ...
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-start`);
-	runner.eventBus.emit("task-start" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-message`);
-	function sleep(ms: number): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, ms));
+	if (shouldSelfUpdate) {
+		// TODO: add task before all current tasks
+		// ...
+		shouldSelfUpdate = false;
 	}
-	async function delayedMessage() {
-		runner.eventBus.emit("task-message" as any, runner.eventBus.createEvent<string>(runner.context, cmd, 'testing-test', 'Hello') as any);
-		await sleep(2000);
-		runner.eventBus.emit("task-message" as any, runner.eventBus.createEvent<string>(runner.context, cmd, 'testing-test', 'World') as any);
-		await sleep(2000);
-		runner.eventBus.emit("task-message" as any, runner.eventBus.createEvent<string>(runner.context, cmd, 'testing-test', 'Goodbye') as any);
+
+	// TODO Validate current command config
+	// ...
+
+	runner.eventBus.emit("command-start", runner.eventBus.createEvent(runner.context, requiredTaskList));
+
+	try {
+		function walker(list: any): Promise<any> {
+			if (Array.isArray(list)) {
+				return Promise.all(list.map(
+					(el) => walker(el)
+				));
+			} else {
+				// TODO check if variables are defined
+				const { task, id } = list;
+
+				runner.eventBus.emit("task-start", runner.eventBus.createEvent(runner.context));
+
+				return new Promise((resolve, reject) => {
+					try {
+						task(runner.context, { eventBus: runner.eventBus });
+						runner.eventBus.emit("task-finish", runner.eventBus.createEvent(runner.context));
+						resolve(id);
+					} catch(taskExecutionError) {
+						runner.eventBus.emit("task-error", runner.eventBus.createEvent(runner.context, taskExecutionError));
+						reject(taskExecutionError);
+					} finally {
+						runner.eventBus.emit("task-finally", runner.eventBus.createEvent(runner.context));
+					}
+				});
+			}
+		}
+
+		if (Array.isArray(requiredTaskList)) {
+			for (let i = 0; i < requiredTaskList.length; i++) {
+				const mod = requiredTaskList[i];
+				await walker(mod);
+			}
+		} else {
+			requiredTaskList.task(runner.context, { eventBus: runner.eventBus });
+		}
+
+		runner.eventBus.emit("command-finish", runner.eventBus.createEvent(runner.context));
+	} catch(commandRunError) {
+		runner.eventBus.emit("command-error", runner.eventBus.createEvent(runner.context, commandRunError));
+	} finally {
+		runner.eventBus.emit("command-finally", runner.eventBus.createEvent(runner.context));
 	}
-	await delayedMessage();
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-finish`);
-	runner.eventBus.emit("task-finish" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ task-finally`);
-	runner.eventBus.emit("task-finally" as any, runner.eventBus.createEvent(runner.context, cmd, 'testing-test'));
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-finish`);
-	runner.eventBus.emit("command-finish" as any, runner.eventBus.createEvent(runner.context, cmd));
-
-	if (config.debug) log(`[${cmd}]: @TODO: ⚡️ command-finally`);
-	runner.eventBus.emit("command-finally" as any, runner.eventBus.createEvent(runner.context, cmd));
 }
-
-// init
-// - validate config
-// - check for updates - async add command
-// - load commands list
-// - create event bus
-// - create context
-// - import current command
-// - validate current command config
-// @return message bus
 
 // run cmd loop
 // - fork process
@@ -105,6 +110,8 @@ export async function run(runner: Runner, log = console.log) {
 //   - validate task config
 //   - run task
 //   - on task-message
+//   - on task-input
+//   - on task-output
 //   - on task-finish
 //   - on task-error
 //   - on task-finally

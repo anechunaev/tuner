@@ -1,9 +1,11 @@
 import { EventType } from './eventbus/constants';
 import { TunerEventBus } from './eventbus';
 
+// Config types
 // @TODO: Add correct config type
 export type Config = any;
 
+// Context types
 export type ContextError = {
 	exception: Error;
 	original: Error;
@@ -24,21 +26,30 @@ export type Context = {
 	error?: ContextError;
 }
 
-// @TODO: Add utils
-export type Task = (ctx: Context, utils?: any) => void | Promise<any>;
-
+// Event types
 export type TunerEventType = typeof EventType;
 
-export type TunerEvent<T extends undefined | string | Error> = {
+export type TunerEventData = string | Error | Record<string, any> | undefined;
+
+export type TunerEvent<T extends TunerEventData> = {
 	task?: string;
-	cmd: string;
 	context: Context;
 	data: T;
 }
 
-export type TunerEventListener<T extends undefined | string | Error> = (event: TunerEvent<T>) => void;
+export type TunerEventListener<T extends TunerEventData> = (event: TunerEvent<T>) => void;
 
+// Task types
+export type TaskTools = {
+	eventBus: TunerEventBus;
+}
+export type Task = (ctx: Context, utils: TaskTools) => void | Promise<any>;
+export type TaskModule = {
+	task: Task;
+	description?: string | Record<string, string>;
+}
 
+// Runner types
 export type Runner = {
 	eventBus: TunerEventBus;
 	context: Context;

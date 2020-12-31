@@ -1,0 +1,32 @@
+{
+  "name": "@tuner/preset-default",
+  "version": "0.0.0",
+  "description": "Preset with default commands",
+  "author": "Artem Nechunaev <bungubot@gmail.com>",
+  "homepage": "https://github.com/bungu/tuner/tree/master/packages/preset-default#readme",
+  "license": "MIT",
+  "main": "README.md",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://artifactory.tutu.ru/artifactory/api/npm/npm-common/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bungu/tuner.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/bungu/tuner/issues"
+  },
+  "dependencies": {
+    "@tuner/task-help": "*"
+  }
+}

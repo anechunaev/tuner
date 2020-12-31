@@ -1,22 +1,18 @@
 #!/usr/bin/env node
 
 import { init, run } from "@tuner/core";
+import { Args } from "@tuner/core/lib/interfaces";
 import classicUI from './classic';
 import compactUI from './compact';
 import dashboardUI from './dashboard';
+import silentUI from './silent';
+import parseArgs from 'minimist';
 
-let msgStart = ''; //"\x1b[2m";
-let msgEnd = ''; //"\x1b[0m"
-const wrappedLog = (...args: any[]) => console.log(`${msgStart}${args.map(e => e.toString()).join(' ')}${msgEnd}`);
+const args: Args = parseArgs(process.argv.slice(2)) as Args;
+const cmd = args._[0];
 
-const runner = init(wrappedLog);
+const runner = init(args);
 const uiType = runner.context.config.ui;
-const isCI = runner.context.config.ci;
-
-if (!isCI) {
-	msgStart = "\x1b[2m";
-	msgEnd = "\x1b[0m"
-}
 
 let ui = classicUI;
 
@@ -27,10 +23,13 @@ case "dashboard":
 case "compact":
 	ui = compactUI;
 	break;
+case "silent":
+	ui = silentUI;
+	break;
 default:
 	ui = classicUI;
 }
 
 ui(runner);
 
-run(runner, wrappedLog);
+run(cmd || "help", runner);

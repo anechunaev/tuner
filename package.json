@@ -4,7 +4,7 @@
   "description": "Tools and scripts for main @tuner/core project",
   "main": "index.js",
   "scripts": {
-    "build": "lerna run build",
+    "build": "lerna run build && lerna link",
     "test": "echo 'Not implemented yet' && exit 1"
   },
   "repository": {

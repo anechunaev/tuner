@@ -12,6 +12,9 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": false,
 		"downlevelIteration": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"lib": [
+			"ES2019.Array"
+		]
 	}
 }

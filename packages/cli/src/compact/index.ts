@@ -3,8 +3,8 @@ import { Runner } from '@tuner/core/lib/interfaces';
 function ui(runner: Runner) {
 	console.log('Using compact interface');
 
-	runner.eventBus.on("command-start", ({ cmd, context }) => {
-		console.log(`[CLI]: Command "${cmd}" started. Context: `, context);
+	runner.eventBus.on("command-start", ({ context }) => {
+		console.log(`[CLI]: Command "${context.cmd}" started. Context: `, context);
 	});
 
 	runner.eventBus.on("task-start", ({ task }) => {
@@ -23,12 +23,12 @@ function ui(runner: Runner) {
 		console.log(`[CLI]: Task "${task}" finally.`);
 	});
 
-	runner.eventBus.on("command-finish", ({ cmd }) => {
-		console.log(`[CLI]: Command "${cmd}" finished.`);
+	runner.eventBus.on("command-finish", ({ context }) => {
+		console.log(`[CLI]: Command "${context.cmd}" finished.`);
 	});
 
-	runner.eventBus.on("command-finally", ({ cmd }) => {
-		console.log(`[CLI]: Command "${cmd}" finally.`);
+	runner.eventBus.on("command-finally", ({ context }) => {
+		console.log(`[CLI]: Command "${context.cmd}" finally.`);
 	});
 }
 
