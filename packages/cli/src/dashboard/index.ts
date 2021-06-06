@@ -1,4 +1,6 @@
-import { Runner } from '@tuner/core/lib/interfaces';
+// import { Runner } from '@tuner/core/lib/interfaces';
+
+type Runner = any;
 
 function ui(_runner: Runner) {
 	console.log('Using dashboard interface');

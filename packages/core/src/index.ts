@@ -1,124 +1,78 @@
+import cp from "child_process";
+import path from "path";
+import { getConfig } from './config';
 import { createEventBus } from './eventbus';
 import { createContext } from './context';
-import { getConfig } from './config';
 import { Runner, Args } from './interfaces';
-import { nestedArrayMapper } from './tools';
-
-let shouldSelfUpdate = false;
 
 export function init(args: Args): Runner {
 	const config = getConfig();
-
-	// TODO: Validate config
-	// ...
-
-	// TODO: Check for updates - async add command
-	if (config.autoupdate) {
-		// TODO: check if update needed
-		// ...
-		// shouldSelfUpdate = true;
-	}
-
 	const eventBus = createEventBus();
-
 	const context = createContext({ args, config });
 
 	return {
-		eventBus,
 		context,
+		eventBus,
 	};
 }
 
-export async function run(cmd: string, runner: Runner) {
+export function run(cmd: string = "help", runner: Runner) {
 	runner.context.cmd = cmd;
-	const commandInfo = runner.context.config.commands[cmd];
+	runner.eventBus.emit("command-start", runner.eventBus.createEvent(runner.context));
+	const procRunner = cp.fork(path.resolve(__dirname, "./task-runner.js"), [], { silent: true });
 
-	let index = 0;
-	const requiredTaskList = nestedArrayMapper(commandInfo.tasks, (task) => {
-		const exp = require(task);
-		if (exp.id) return exp;
-
-		exp.id = Number(++index);
-		exp.path = task;
-		return exp;
+	// procRunner.stdout!.addListener("data", (chunk: string) => {
+	// 	procRunner.send({ lifecycle: "update", stdout: chunk.toString() });
+	// });
+	
+	// procRunner.stderr!.addListener("error", (error: string) => {
+	// 	procRunner.send({ lifecycle: "update", stderr: error.toString() });
+	// });
+	procRunner.stdout!.addListener("data", (chunk: string) => {
+		runner.eventBus.emit("task-output", runner.eventBus.createEvent(runner.context, chunk));
 	});
-	commandInfo.tasks = requiredTaskList;
-
-	if (shouldSelfUpdate) {
-		// TODO: add task before all current tasks
-		// ...
-		shouldSelfUpdate = false;
-	}
-
-	// TODO Validate current command config
-	// ...
-
-	runner.eventBus.emit("command-start", runner.eventBus.createEvent(runner.context, requiredTaskList));
-
-	try {
-		function walker(list: any): Promise<any> {
-			if (Array.isArray(list)) {
-				return Promise.all(list.map(
-					(el) => walker(el)
-				));
-			} else {
-				// TODO check if variables are defined
-				const { task, id } = list;
-
-				runner.eventBus.emit("task-start", runner.eventBus.createEvent(runner.context));
-
-				return new Promise((resolve, reject) => {
-					try {
-						task(runner.context, { eventBus: runner.eventBus });
-						runner.eventBus.emit("task-finish", runner.eventBus.createEvent(runner.context));
-						resolve(id);
-					} catch(taskExecutionError) {
-						runner.eventBus.emit("task-error", runner.eventBus.createEvent(runner.context, taskExecutionError));
-						reject(taskExecutionError);
-					} finally {
-						runner.eventBus.emit("task-finally", runner.eventBus.createEvent(runner.context));
-					}
-				});
-			}
+	
+	procRunner.stderr!.addListener("error", (error: string) => {
+		runner.eventBus.emit("task-error", runner.eventBus.createEvent(runner.context, error));
+	});
+	
+	procRunner.addListener("exit", (code: number) => {
+		if (code === 0) {
+			runner.eventBus.emit("command-finish", runner.eventBus.createEvent(runner.context));
 		}
+		runner.eventBus.emit("command-finally", runner.eventBus.createEvent(runner.context, code));
+	});
+	
+	procRunner.addListener("message", (chunk: any) => {
+		if (chunk.error) {
+			const commandError = new Error(chunk.message);
+			commandError.stack = chunk.stack;
+			commandError.name = chunk.name;
+			(commandError as any).type = chunk.type;
+			(commandError as any).code = chunk.code;
+			(commandError as any).data = chunk.data;
+			(commandError as any).context = chunk.context;
 
-		if (Array.isArray(requiredTaskList)) {
-			for (let i = 0; i < requiredTaskList.length; i++) {
-				const mod = requiredTaskList[i];
-				await walker(mod);
+			runner.eventBus.emit("command-error", runner.eventBus.createEvent(chunk.context, commandError));
+		} else if (chunk.meta) {
+			switch(chunk.meta) {
+			case "task-start":
+				runner.eventBus.emit("task-start", runner.eventBus.createEvent(chunk.context, chunk.context.task as string));
+				break;
+			case "task-finish":
+				runner.eventBus.emit("task-finish", runner.eventBus.createEvent(chunk.context, chunk.context.task as string));
+				break;
+			case "task-finish":
+				runner.eventBus.emit("task-error", runner.eventBus.createEvent(chunk.context, chunk.context));
+				break;
+			case "task-update":
+				runner.context = chunk.context;
+				break;
 			}
 		} else {
-			requiredTaskList.task(runner.context, { eventBus: runner.eventBus });
+			runner.eventBus.emit("task-message", runner.eventBus.createEvent(chunk.context, chunk.data));
 		}
+	});
 
-		runner.eventBus.emit("command-finish", runner.eventBus.createEvent(runner.context));
-	} catch(commandRunError) {
-		runner.eventBus.emit("command-error", runner.eventBus.createEvent(runner.context, commandRunError));
-	} finally {
-		runner.eventBus.emit("command-finally", runner.eventBus.createEvent(runner.context));
-	}
+	procRunner.send({ lifecycle: "run", context: runner.context });
 }
-
-// run cmd loop
-// - fork process
-// - on command-start
-// - load tasks list
-// - import tasks
-// - on command-message
-// - loop:
-//   - on task-start
-//   - validate task config
-//   - run task
-//   - on task-message
-//   - on task-input
-//   - on task-output
-//   - on task-finish
-//   - on task-error
-//   - on task-finally
-// - on command-finish
-// - on command-error
-// - on command-finally
-
-// - on command-stdout
-// - on command-stderr
-// - on command-stdin

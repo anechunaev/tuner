@@ -10,7 +10,7 @@
 		"moduleResolution": "node",
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"resolveJsonModule": false,
+		"resolveJsonModule": true,
 		"downlevelIteration": true,
 		"forceConsistentCasingInFileNames": true,
 		"lib": [

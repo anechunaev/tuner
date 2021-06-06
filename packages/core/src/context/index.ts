@@ -15,6 +15,7 @@ export function createContext({ config, args }: CreateContextOptions): Context {
 		args: immutableArgs,
 		local: {},
 		error: undefined,
-		cmd: "",
+		cmd: "help",
+		task: undefined,
 	};
 }

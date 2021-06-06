@@ -10,7 +10,7 @@ module.exports = {
 				en: "Shows available commands or exact command description.",
 				ru: "Выводит список доступных команд или описание конкретной команды.",
 			},
-			example: "help [COMMAND]",
+			example: ["help [COMMAND]", "<COMMAND> --help", "<COMMAND> -h"],
 			args: [
 				{
 					name: "COMMAND",

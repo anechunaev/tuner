@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build": "npm run clean && npm run compile",
-    "clean": "rm -rf ./lib && rm -rf tsconfig.build.tsbuildinfo",
+    "clean": "rm -rf ./lib/**/* && rm -rf tsconfig.build.tsbuildinfo",
     "compile": "tsc -b tsconfig.build.json",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },

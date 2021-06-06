@@ -1,5 +1,7 @@
 import path from 'path';
-import { HOME_DIR } from '../platform/constants';
+import os from 'os';
+
+const HOME_DIR = os.homedir();
 
 export const PACKAGE = require(path.resolve(__dirname, '../../package.json'));
 
