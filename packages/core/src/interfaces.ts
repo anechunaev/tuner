@@ -17,6 +17,20 @@ export interface TunerTaskError extends Error {
 	context: Context;
 }
 
+// Plugin types
+export type Plugin = {
+	init?: (context: Context) => void;
+	commandStart?: (context: Context) => void;
+	commandFinish?: (context: Context) => void;
+	commandFinally?: (context: Context) => void;
+	commandError?: (context: Context) => void;
+	taskStart?: (context: Context) => void;
+	taskFinish?: (context: Context) => void;
+	taskFinally?: (context: Context) => void;
+	taskError?: (context: Context) => void;
+	taskMessage?: (context: Context) => void;
+}
+
 // Config types
 // @TODO: Add correct config type
 export type Config = any;
@@ -30,8 +44,8 @@ export type ContextError = {
 }
 
 export type Args = {
-	_: readonly string[];
-	readonly [flag: string]: any;
+	_: string[];
+	[flag: string]: any;
 }
 
 export type Context = {
@@ -41,6 +55,7 @@ export type Context = {
 	args: Args;
 	local: any;
 	error?: ContextError;
+	plugins?: Plugin[];
 }
 
 // Event types

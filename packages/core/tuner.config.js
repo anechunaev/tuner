@@ -49,9 +49,11 @@ module.exports = {
 		},
 	},
 
-	plugins: [],
+	plugins: [
+		"@tuner/plugin-help",
+	],
 
-	// preset: "@tuner/preset-default",
+	preset: "@tuner/preset-default",
 	// secrets: {},
 
 	// commands: [

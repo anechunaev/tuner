@@ -27,6 +27,7 @@
     "url": "https://github.com/bungu/tuner/issues"
   },
   "dependencies": {
+    "@tuner/plugin-help": "*",
     "@tuner/task-help": "*"
   }
 }

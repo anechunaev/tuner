@@ -1,12 +1,15 @@
 {
-  "name": "@tuner/core",
+  "name": "@tuner/plugin-help",
   "version": "0.0.0",
-  "description": "Core of the Tuner",
+  "description": "This plugin adds support for --help flag combined with any other command.",
   "author": "Artem Nechunaev <artem@nechunaev.com>",
-  "homepage": "https://github.com/bungu/tuner/tree/master/packages/core#readme",
+  "homepage": "https://github.com/bungu/tuner/tree/master/packages/plugin-help#readme",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "bin": {
+    "tuner": "./lib/index.js"
+  },
   "directories": {
     "lib": "lib",
     "test": "tests",
@@ -30,9 +33,10 @@
     "url": "https://github.com/bungu/tuner/issues"
   },
   "devDependencies": {
-    "typescript": "^4.1.2"
+    "typescript": "^4.3.2"
   },
   "dependencies": {
-    "js-yaml": "^3.14.0"
+    "@tuner/core": "*",
+    "@tuner/helpers": "*"
   }
 }

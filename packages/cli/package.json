@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@tuner/core": "*",
+    "@tuner/preset-default": "*",
     "minimist": "^1.2.5"
   }
 }

@@ -17,5 +17,6 @@ export function createContext({ config, args }: CreateContextOptions): Context {
 		error: undefined,
 		cmd: "help",
 		task: undefined,
+		plugins: [],
 	};
 }

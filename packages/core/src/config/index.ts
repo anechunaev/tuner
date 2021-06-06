@@ -5,18 +5,23 @@ import { mergeConfigs } from './helpers';
 import yaml from 'js-yaml';
 import { nestedArrayMapper } from '../tools';
 
-const getTaskFullPath = (configDir: string, task: string) => {
+const getTaskFullPath = (configDir: string, task: string, preset: string) => {
 	if (task[0] === '.' || task[0] === '/') {
 		return path.resolve(configDir, task);
 	} else {
-		return require.resolve(task);
+		const paths = [
+			path.resolve(path.dirname(require.main!.filename), './node_modules'),
+			path.resolve(path.dirname(require.main!.filename), '../node_modules'),
+			path.resolve(path.dirname(require.main!.filename), `./node_modules/${preset}/node_modules`),
+			path.resolve(path.dirname(require.main!.filename), `../node_modules/${preset}/node_modules`),
+			path.resolve(process.cwd(), './node_modules'),
+		];
+		return require.resolve(task, { paths });
 	}
 }
 
 export function resolvePathsInConfig<T extends Record<string, any>>(config: T, configDir: string): T {
 	if (config === null || typeof config === 'undefined') return config;
-
-	const newConfig = Object.assign({}, config);
 
 	if (typeof config.commands !== 'undefined') {
 		Object.keys(config.commands).forEach(cmd => {
@@ -28,11 +33,11 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 			case Array.isArray(config.commands[cmd].tasks):
 				config.commands[cmd].tasks = nestedArrayMapper(
 					config.commands[cmd].tasks,
-					(task) => getTaskFullPath(configDir, task),
+					(task) => getTaskFullPath(configDir, task, config.preset),
 				);
 				break;
 			case typeof config.commands[cmd].tasks === "string":
-				config.commands[cmd].tasks = [getTaskFullPath(configDir, config.commands[cmd].tasks)];
+				config.commands[cmd].tasks = [getTaskFullPath(configDir, config.commands[cmd].tasks, config.preset)];
 				break;
 			default:
 				throw errorTaskPath;
@@ -40,7 +45,12 @@ export function resolvePathsInConfig<T extends Record<string, any>>(config: T, c
 		});
 	}
 
-	return newConfig;
+	if (typeof config.plugins !== "undefined" && Array.isArray(config.plugins) && config.plugins.length > 0) {
+		// TODO: Fix type T
+		(config as any).plugins = config.plugins.map(plugin => getTaskFullPath(configDir, plugin, config.preset));
+	}
+
+	return config;
 }
 
 export function getConfig() {
