@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@tuner/core": "*",
+    "@tuner/helpers": "*",
     "columnify": "^1.5.4"
   }
 }

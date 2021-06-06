@@ -21,18 +21,11 @@ export function run(cmd: string = "help", runner: Runner) {
 	runner.eventBus.emit("command-start", runner.eventBus.createEvent(runner.context));
 	const procRunner = cp.fork(path.resolve(__dirname, "./task-runner.js"), [], { silent: true });
 
-	// procRunner.stdout!.addListener("data", (chunk: string) => {
-	// 	procRunner.send({ lifecycle: "update", stdout: chunk.toString() });
-	// });
-	
-	// procRunner.stderr!.addListener("error", (error: string) => {
-	// 	procRunner.send({ lifecycle: "update", stderr: error.toString() });
-	// });
 	procRunner.stdout!.addListener("data", (chunk: string) => {
 		runner.eventBus.emit("task-output", runner.eventBus.createEvent(runner.context, chunk));
 	});
-	
-	procRunner.stderr!.addListener("error", (error: string) => {
+
+	procRunner.stderr!.addListener("data", (error: string) => {
 		runner.eventBus.emit("task-error", runner.eventBus.createEvent(runner.context, error));
 	});
 	
@@ -61,9 +54,6 @@ export function run(cmd: string = "help", runner: Runner) {
 				break;
 			case "task-finish":
 				runner.eventBus.emit("task-finish", runner.eventBus.createEvent(chunk.context, chunk.context.task as string));
-				break;
-			case "task-finish":
-				runner.eventBus.emit("task-error", runner.eventBus.createEvent(chunk.context, chunk.context));
 				break;
 			case "task-update":
 				runner.context = chunk.context;

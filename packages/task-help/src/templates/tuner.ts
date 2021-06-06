@@ -1,9 +1,15 @@
 import { Context } from "@tuner/core/lib/interfaces";
+import { getColorBanner } from "@tuner/helpers/lib/banner";
 import columnify from 'columnify';
 
 export function template(context: Context): string {
 	let message = "\n";
+
 	// Add app banner
+	message += getColorBanner({
+		name: context.config.meta.package,
+		version: context.config.meta.version,
+	}) + "\n\n";
 
 	// Show usage of tuner itself
 	const shell = `\x1b[0;32m  $\x1b[0m`;

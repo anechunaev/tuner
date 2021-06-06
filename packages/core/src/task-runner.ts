@@ -57,10 +57,6 @@ if (typeof process.send === "function") {
 							})
 							.catch((taskRunError) => {
 								process.send!({
-									meta: "task-error",
-									context: taskContext,
-								});
-								process.send!({
 									error: true,
 									name: taskRunError.name,
 									message: taskRunError.message,
@@ -68,7 +64,7 @@ if (typeof process.send === "function") {
 									code: "ETASKRUN",
 									stack: taskRunError.stack,
 									arguments: taskRunError.arguments,
-									type: taskRunError.type,
+									type: "TaskError",
 									context: taskContext,
 								});
 								process.exitCode = process.exitCode ?? 1;
@@ -89,21 +85,12 @@ if (typeof process.send === "function") {
 					code: "ETASKNOTFOUND",
 					stack: taskNotFoundError.stack,
 					arguments: undefined,
-					type: "TunerConfigError",
+					type: "TunerError",
 					context: taskContext,
 				});
 				process.exit(1);
 			}
 		}
-		// } else if (req.lifecycle === "update") {
-		// 	console.log("--> Task got update request");
-		// 	process.send!({
-		// 		meta: "task-update",
-		// 		context: taskContext,
-		// 		stdout: req.stdout,
-		// 		stderr: req.stderr,
-		// 	});
-		// }
 	});
 } else {
 	throw new Error("This file should be executed in child process only. Use any available Tuner interface to run the task.")

@@ -8,7 +8,8 @@
 		"rootDir": "./src",
 
 		"paths": {
-			"@tuner/core": ["../core/lib/index"]
+			"@tuner/core": ["../core/lib/index"],
+			"@tuner/helpers": ["../helpers/lib/index"]
 		}
 	},
 
