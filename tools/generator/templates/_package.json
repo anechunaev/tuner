@@ -1,0 +1,41 @@
+{
+  "name": "@tuner/<%= name %>",
+  "version": "0.0.0",
+  "description": "<%= description %>",
+  "author": "Artem Nechunaev <artem@nechunaev.com>",
+  "homepage": "https://github.com/bungu/tuner/tree/master/packages/<%= name %>#readme",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "tuner": "./lib/index.js"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "tests",
+    "src": "src"
+  },
+  "files": [
+    "lib",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bungu/tuner.git"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf ./lib/**/* && rm -rf tsconfig.build.tsbuildinfo",
+    "compile": "tsc -b tsconfig.build.json",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/bungu/tuner/issues"
+  },
+  "devDependencies": {
+    "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "@tuner/core": "*"
+  }
+}
