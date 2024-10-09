@@ -3,57 +3,71 @@ import fs from 'fs';
 import * as Constants from './constants';
 import { mergeConfigs } from './helpers';
 import yaml from 'js-yaml';
-import { nestedArrayMapper } from '../tools';
+// import { nestedArrayMapper } from '../tools';
+import { Config, ConfigPresets } from '../interfaces';
 
-const getTaskFullPath = (configDir: string, task: string, preset: string) => {
-	if (task[0] === '.' || task[0] === '/') {
-		return path.resolve(configDir, task);
+const getModuleFullPath = (configDir: string, mod: string, preset?: ConfigPresets) => {
+	if (mod[0] === '.' || mod[0] === '/') {
+		return path.resolve(configDir, mod);
 	} else {
+		let presetArray: string[] | string[][] = [];
+		if (typeof preset !== "undefined") {
+			presetArray = Array.isArray(preset) ? preset.map(presetPath => [
+				path.resolve(path.dirname(require.main!.filename), `./node_modules/${presetPath}/node_modules`),
+				path.resolve(path.dirname(require.main!.filename), `../node_modules/${presetPath}/node_modules`),
+			]) : [
+				path.resolve(path.dirname(require.main!.filename), `./node_modules/${preset}/node_modules`),
+				path.resolve(path.dirname(require.main!.filename), `../node_modules/${preset}/node_modules`),
+			];
+		}
+
 		const paths = [
 			path.resolve(path.dirname(require.main!.filename), './node_modules'),
 			path.resolve(path.dirname(require.main!.filename), '../node_modules'),
-			path.resolve(path.dirname(require.main!.filename), `./node_modules/${preset}/node_modules`),
-			path.resolve(path.dirname(require.main!.filename), `../node_modules/${preset}/node_modules`),
+			...presetArray,
 			path.resolve(process.cwd(), './node_modules'),
-		];
-		return require.resolve(task, { paths });
+		].flat();
+		return require.resolve(mod, { paths });
 	}
 }
 
-export function resolvePathsInConfig<T extends Record<string, any>>(config: T, configDir: string): T {
+export function resolvePathsInConfig<T extends Config>(config: T, configDir: string): T {
 	if (config === null || typeof config === 'undefined') return config;
 
+	// If commands defined in current config
 	if (typeof config.commands !== 'undefined') {
-		Object.keys(config.commands).forEach(cmd => {
-			// TODO: move to errors list
-			const errorTaskPath = new Error(`Error: Task should be a string or array of strings. Check command "${cmd}".`);
+		let commands: any[] = [];
+		if (typeof config.commands === "string") {
+			commands = [config.commands];
+		} else if (Array.isArray(config.commands)) {
+			// TODO: Validate if commands are strings
+			commands = config.commands;
+		} else {
+			throw new Error("Config Validation Error: `commands` property should be a string or array of strings");
+		}
 
-			// TODO: do something less stupid instead
-			switch(true) {
-			case Array.isArray(config.commands[cmd].tasks):
-				config.commands[cmd].tasks = nestedArrayMapper(
-					config.commands[cmd].tasks,
-					(task) => getTaskFullPath(configDir, task, config.preset),
-				);
-				break;
-			case typeof config.commands[cmd].tasks === "string":
-				config.commands[cmd].tasks = [getTaskFullPath(configDir, config.commands[cmd].tasks, config.preset)];
-				break;
-			default:
-				throw errorTaskPath;
-			}
-		});
+		config.commands = commands.map(command => getModuleFullPath(configDir, command, config.presets));
 	}
 
-	if (typeof config.plugins !== "undefined" && Array.isArray(config.plugins) && config.plugins.length > 0) {
-		// TODO: Fix type T
-		(config as any).plugins = config.plugins.map(plugin => getTaskFullPath(configDir, plugin, config.preset));
+	// If plugins defined in current config
+	if (typeof config.plugins !== "undefined") {
+		let plugins: any[] = [];
+		if (typeof config.plugins === "string") {
+			plugins = [config.plugins];
+		} else if (Array.isArray(config.plugins)) {
+			// TODO: validate if plugins are strings
+			plugins = config.plugins;
+		} else {
+			throw new Error("Config Validation Error: `plugins` property should be a string or array of strings");
+		}
+
+		config.plugins = plugins.map(plugin => getModuleFullPath(configDir, plugin, config.presets));
 	}
 
 	return config;
 }
 
-export function getConfig() {
+export function getConfig(): Config {
 	// Find all configs in system
 	const files = Constants.PATHS_TO_SEARCH.reduce<Set<string>>((list, pathToSearch) => {
 		Constants.CONFIG_FILE_NAMES.forEach(configPath => {
@@ -69,7 +83,7 @@ export function getConfig() {
 	files.add(Constants.DEFAULT_CONFIG_PATH);
 
 	// Set base config
-	let config: Record<string, any> = {
+	let config: Config = {
 		meta: {
 			package: Constants.PACKAGE.name,
 			version: Constants.PACKAGE.version,
@@ -77,9 +91,8 @@ export function getConfig() {
 		},
 	};
 
-	// Deep merge all available configs
-	[...files.values()].reverse().forEach(entry => {
-		let resolvedConfig = {};
+	function resolveConfig(entry: string): any {
+		let resolvedConfig: Config = {};
 
 		if (path.extname(entry) === '.js' || path.extname(entry) === '.json') {
 			resolvedConfig = require(entry);
@@ -90,6 +103,21 @@ export function getConfig() {
 				resolvedConfig = yamlConfig;
 			}
 		}
+
+		if (typeof resolvedConfig.presets === "string") {
+			resolvedConfig.presets = [resolvedConfig.presets];
+		}
+
+		if (Array.isArray(resolvedConfig.presets)) {
+			const presetPaths = resolvedConfig.presets.map(preset => getModuleFullPath(path.dirname(entry), preset));
+			
+			// load preset configs
+		}
+	}
+
+	// Deep merge all available configs
+	[...files.values()].reverse().forEach(entry => {
+		
 
 		config = mergeConfigs(config, resolvePathsInConfig(resolvedConfig, path.dirname(entry)));
 	});

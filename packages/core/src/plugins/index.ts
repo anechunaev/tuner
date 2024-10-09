@@ -1,7 +1,11 @@
 import { Context, Plugin } from "../interfaces";
 
 export function loadPlugins(context: Context) {
-	context.plugins = context.config.plugins.map((plugin: string) => require(plugin));
+	if (Array.isArray(context.config.plugins)) {
+		context.plugins = context.config.plugins.map((plugin: string) => require(plugin));
+	} else {
+		context.plugins = [];
+	}
 }
 
 export function runPluginHandler(handler: keyof Plugin, context: Context) {

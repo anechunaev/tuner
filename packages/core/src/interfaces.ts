@@ -33,7 +33,54 @@ export type Plugin = {
 
 // Config types
 // @TODO: Add correct config type
-export type Config = any;
+export type Locale = "en" | "ru";
+export type ConfigTask = {
+	id: string;
+	path: string;
+};
+export type ConfigCommandArgs = {
+	id: string;
+	description?: string | Record<Locale, string>;
+	defaultValue?: string;
+	required?: boolean;
+};
+export type ConfigCommandFlags = {
+	id: string;
+	short?: string;
+	description?: string | Record<Locale, string>;
+	defaultValue?: string;
+	required?: boolean;
+};
+export type ConfigCommand = string | {
+	id: string;
+	tasks: string | ConfigTask[];
+	description?: string | Record<Locale, string>;
+	example?: string | string[];
+	args?: ConfigCommandArgs[];
+	flags?: ConfigCommandFlags[];
+};
+export type ConfigPlugins = string | {
+	id: string;
+	path: string;
+	description?: string | Record<Locale, string>;
+};
+export type ConfigPresets = string | string[];
+export type Config = {
+	meta?: {
+		package?: string;
+		version?: string;
+		name?: string;
+	};
+	environment?: {
+		locale?: Locale;
+		ci?: boolean;
+	};
+	ui?: "classic" | "verbose" | "silent" | "minimal" | "dashboard";
+	commands?: string | ConfigCommand[];
+	plugins?: string | ConfigPlugins[];
+	presets?: ConfigPresets;
+	secrets?: any[];
+};
 
 // Context types
 export type ContextError = {
